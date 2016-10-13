@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/com.vogella.android.navigationwidgetattempt"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.vogella.android.navigationwidgetattempt.MainActivity"
+    tools:showIn="@layout/app_bar_main">
+
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.vogella.android.googlemapstry.MapsActivity" />
+    <Spinner
+        android:id="@+id/driverStatus"
+        android:layout_marginTop="56dp"
+        android:background="@color/wallet_holo_blue_light"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"></Spinner>
+    <TextView
+        android:background="@color/common_signin_btn_light_text_default"
+        android:id="@+id/ongoing_requests"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
+        android:onClick="onClick"/>
+
+    <!--
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_below="@id/map"
+            android:text="No Requests"/>
+    -->
+
+</RelativeLayout>
