@@ -1,5 +1,7 @@
 package com.vogella.android.navigationwidgetattempt;
 
+import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -13,6 +15,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +31,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback {
     private GoogleMap mMap;
+    private int menuState = 0; //the user is signed out
+    private static final int LOGIN_REQUEST_CODE = 10;
+    private static driver driver = new driver();
+    private static request current_request = new request();
+
+//    private Dialog myDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,16 +65,59 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        Spinner driverStatus = (Spinner) findViewById(R.id.driverStatus);
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter adapter = ArrayAdapter.createFromResource(this, R.array.driverStatusArray, android.R.layout.simple_spinner_item);
-        // Specify the layout to use when the list of choices appears
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Apply the adapter to the spinner
-        driverStatus.setAdapter(adapter);
-        //Write initial text for the requests window
-        TextView requests = (TextView) findViewById(R.id.ongoing_requests);
-        requests.setText("You have 2 requests");
+        final Button changeDriverStatus = (Button) findViewById(R.id.driver_status);
+        changeDriverStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(changeDriverStatus.getText().toString().equals("available"))
+                    changeDriverStatus.setText("away");
+                else if(changeDriverStatus.getText().toString().equals("away"))
+                    changeDriverStatus.setText("available");
+            }
+        });
+//        TextView requests = (TextView) findViewById(R.id.ongoing_request);
+//        requests.setText("You have 2 requests");
+        Button cancelRequest = (Button) findViewById(R.id.cancel_request);
+        cancelRequest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        Button nextState = (Button) findViewById(R.id.next_state);
+        nextState.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        if (driver.username == null) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivityForResult(intent, LOGIN_REQUEST_CODE);
+        }
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(requestCode == LOGIN_REQUEST_CODE && resultCode == RESULT_OK){
+            if(data.hasExtra("username")){
+                String name = data.getExtras().getString("username");
+                if(name != null && name.length() > 0){
+                    menuState = 1;
+                    invalidateOptionsMenu();
+                    driver.username = name;
+//                    TextView username = (TextView) findViewById(R.id.show_username);
+                    NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+                    TextView username = (TextView)(navigationView.inflateHeaderView(R.layout.nav_header_main))
+                            .findViewById(R.id.show_username);
+                    username.setText(name);
+                    navigationView.getMenu().findItem(R.id.sign_in).setVisible(false);
+                    navigationView.getMenu().findItem(R.id.sign_out).setVisible(true);
+                }
+            }
+        }
     }
 
     @Override
@@ -83,6 +136,7 @@ public class MainActivity extends AppCompatActivity
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -105,19 +159,23 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        if (id == R.id.history) {
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.current_requests) {
 
-        } else if (id == R.id.nav_manage) {
-
-        } /*else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }*/
+        } else if (id == R.id.sign_in) {
+//            callLoginDialog();
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivityForResult(intent, LOGIN_REQUEST_CODE);
+            //if(LoginActivity.UserLoginTask.Status)
+        } else if (id == R.id.sign_out) {
+            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+            navigationView.getMenu().findItem(R.id.sign_in).setVisible(true);
+            navigationView.getMenu().findItem(R.id.sign_out).setVisible(false);
+            driver = null;
+            TextView username = (TextView) findViewById(R.id.show_username);
+            username.setText("not logged in");
+        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -133,9 +191,25 @@ public class MainActivity extends AppCompatActivity
         mMap.addMarker(new MarkerOptions().position(khartoum).title("Marker in Khartoum"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(khartoum, 12 ));
     }
-    public void onClick(View view){
-        if (R.id.ongoing_requests == view.getId()){
+    public void requestDetails(View view){
+        if (R.id.ongoing_request == view.getId()){
             Toast.makeText(this, "Wait! You ACTUUALLY believed you have requests!!!",Toast.LENGTH_SHORT).show();
         }
     }
+    /*void callLoginDialog() {
+        myDialog = new Dialog(this);
+        myDialog.setContentView(R.layout.sign_in);
+        myDialog.setCancelable(false);
+        Button signin = (Button) findViewById(R.id.confirm_signin);
+        EditText username = (EditText) findViewById(R.id.signin_username_input);
+        EditText password = (EditText) findViewById(R.id.signin_password_input);
+        myDialog.show();
+*//*        signin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                menuState = 1; //the user is signed in
+                invalidateOptionsMenu();
+            }
+        });*//*
+    }*/
 }

@@ -14,21 +14,72 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="com.vogella.android.googlemapstry.MapsActivity" />
+<!--
     <Spinner
         android:id="@+id/driverStatus"
         android:layout_marginTop="56dp"
         android:background="@color/wallet_holo_blue_light"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"></Spinner>
-    <TextView
-        android:background="@color/common_signin_btn_light_text_default"
-        android:id="@+id/ongoing_requests"
+-->
+    <Button
+        android:id="@+id/driver_status"
+        android:layout_marginTop="50dp"
+        android:layout_centerHorizontal="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="available"/>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible">
+        <ScrollView
+            android:id="@+id/requests_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"></ScrollView>
+    </RelativeLayout>
+
+<!--
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+    </RelativeLayout>
+-->
+    <RelativeLayout
+        android:id="@+id/ongoing_request"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/common_signin_btn_light_text_default"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="20dp"
-        android:onClick="onClick"/>
+        android:onClick="requestDetails">
+        <TextView
+            android:id="@+id/current_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="on the way"
+            android:layout_centerVertical="true"
+            android:textColor="#402030"/>
+        <Button
+            android:id="@+id/cancel_request"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/current_status"
+            android:layout_toRightOf="@id/current_status"
+            android:text="cancel"
+            android:background="#7F2020"
+            />
+        <Button
+            android:id="@+id/next_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/cancel_request"
+            android:layout_alignLeft="@id/cancel_request"
+            android:text="At pickup"/>
+
+    </RelativeLayout>
 
     <!--
         <TextView
