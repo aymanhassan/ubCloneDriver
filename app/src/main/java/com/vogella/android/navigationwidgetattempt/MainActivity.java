@@ -218,6 +218,9 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.history) {
             RequestAdapter ca = new RequestAdapter(createList(30));
             previous_requests.setAdapter(ca);
+            RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.ongoing_request);
+            relativeLayout.setVisibility(View.INVISIBLE);
+            //TODO: ensure the current request reappears after the card view is over
 
         } else if (id == R.id.current_requests) {
 
