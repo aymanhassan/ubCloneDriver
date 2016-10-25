@@ -63,7 +63,8 @@
             android:text="on the way"
             android:layout_centerVertical="true"
             android:textColor="#FFFFFF"
-            android:textAlignment="center" />
+            android:textAlignment="center"
+            android:textAllCaps="true"/>
         <Button
             android:id="@+id/cancel_request"
             android:layout_width="160dp"
@@ -74,6 +75,7 @@
             android:layout_alignParentRight="true"
             android:text="cancel"
             android:background="#7F2020"
+            android:textSize="12sp"
             />
         <Button
             android:id="@+id/next_state"
@@ -82,7 +84,8 @@
             android:layout_height="50dp"
             android:layout_below="@id/cancel_request"
             android:layout_alignLeft="@id/cancel_request"
-            android:text="At pickup"/>
+            android:text="At pickup"
+            android:textSize="12sp"/>
 
     </RelativeLayout>
 

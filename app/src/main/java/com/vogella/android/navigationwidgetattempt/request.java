@@ -26,8 +26,8 @@ public class request {
         this.notes = null;
         this.passenger_phone = null;
     }
-    public request(String dest, String passenger_name, String pickup, String passenger_phone,
-                   String time, String request_id, String notes, String price, String status){
+    public request(String request_id, String pickup, String dest, String passenger_name,
+                   String passenger_phone, String time, String price, String notes, String status){
         this.dest = dest;
         this.passenger_name = passenger_name;
         this.pickup = pickup;
@@ -39,7 +39,7 @@ public class request {
         this.passenger_phone = passenger_phone;
     }
 
-    public void setDest(String dest) {
+/*    public void setDest(String dest) {
         this.dest = dest;
     }
 
@@ -73,21 +73,29 @@ public class request {
 
     public void setTime(String time) {
         this.time = time;
-    }
+    }*/
 
-    /*public void nextStatus(request request){
-        if (request.status.equals("on the way"))
-            request.status = "pickup";
-        else if (request.status.equals("pickup"))
-            request.status = "passenger picked up";
-        else if (request.status.equals("passenger picked up"))
-            request.status = "arrived at destination";
-        else if (request.status.equals("arrived at destination"))
-            request.status = "complete";
+    public void nextStatus(){
+        switch (this.status) {
+            case "on the way":
+                this.status = "arrived at pickup point";
+                break;
+            case "arrived at pickup point":
+                this.status = "passenger picked up";
+                break;
+            case "passenger picked up":
+                this.status = "arrived at destination";
+                break;
+            case "arrived at destination":
+                this.status = "completed";
+                break;
+        }
+/*
         else if (request.status.equals("on the way"))
             request.status = "pickup";
         else if (request.status.equals("on the way"))
             request.status = "pickup";
         else
-    }*/
+*/
+    }
 }

@@ -1,10 +1,12 @@
 package com.vogella.android.navigationwidgetattempt;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -17,6 +19,7 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,7 +37,18 @@ public class MainActivity extends AppCompatActivity
     private int menuState = 0; //the user is signed out
     private static final int LOGIN_REQUEST_CODE = 10;
     private static driver driver = new driver();
-    private static request current_request = new request();
+    private static final String DUMMY_REQUEST_ID = "1243";
+    private static final String DUMMY_PICKUP = "15.5838046,32.5543825";
+    private static final String DUMMY_DEST = "15.8838046, 32.6543825";
+    private static final String DUMMY_PASSENGER_NAME = "John Green";
+    private static final String DUMMY_PASSENGER_PHONE = "0123456789";
+    private static final String DUMMY_STATUS = "on the way";
+    private static final String DUMMY_NOTES = "Drive slowly";
+    private static final String DUMMY_PRICE = "43";
+    private static final String DUMMY_TIME = "06/11/2016 ; 15:45";
+    private static request current_request = new request(DUMMY_REQUEST_ID, DUMMY_PICKUP, DUMMY_DEST,
+            DUMMY_PASSENGER_NAME, DUMMY_PASSENGER_PHONE, DUMMY_TIME, DUMMY_PRICE, DUMMY_NOTES,
+            DUMMY_STATUS);
 
 //    private Dialog myDialog;
     @Override
@@ -81,14 +95,43 @@ public class MainActivity extends AppCompatActivity
         cancelRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                AlertDialog.Builder alerBuilder = new AlertDialog.Builder(MainActivity.this);
+                alerBuilder.setMessage("Are you sure you want to cancel this request?");
+                alerBuilder.setPositiveButton("Yes, cancel the request", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.ongoing_request);
+                        relativeLayout.setVisibility(View.INVISIBLE);
+                        Toast.makeText(MainActivity.this, "The request has been canceled",
+                                Toast.LENGTH_LONG).show();
+                        current_request = new request();
+                    }
+                });
+                alerBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
 
+                    }
+                });
+                alerBuilder.show();
             }
         });
-        Button nextState = (Button) findViewById(R.id.next_state);
+        final Button nextState = (Button) findViewById(R.id.next_state);
         nextState.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                TextView current = (TextView) findViewById(R.id.current_status);
+                current.setText(nextState.getText().toString());
+                current_request.nextStatus();
+                if (current_request.status.equals("completed")) {
+                    RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.ongoing_request);
+                    relativeLayout.setVisibility(View.INVISIBLE);
+                    Toast.makeText(MainActivity.this, "Thank you for your efforts! The request is complete",
+                            Toast.LENGTH_LONG).show();
+                    current_request = new request();
+                }
+                else
+                    nextState.setText(current_request.status);
             }
         });
 
