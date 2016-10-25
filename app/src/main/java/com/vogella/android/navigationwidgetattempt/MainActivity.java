@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -31,6 +33,9 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback {
     private GoogleMap mMap;
@@ -49,7 +54,9 @@ public class MainActivity extends AppCompatActivity
     private static request current_request = new request(DUMMY_REQUEST_ID, DUMMY_PICKUP, DUMMY_DEST,
             DUMMY_PASSENGER_NAME, DUMMY_PASSENGER_PHONE, DUMMY_TIME, DUMMY_PRICE, DUMMY_NOTES,
             DUMMY_STATUS);
-
+    private RecyclerView previous_requests;
+    private RecyclerView.Adapter RVadapter;
+    private RecyclerView.LayoutManager layoutManager;
 //    private Dialog myDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +86,7 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
         final Button changeDriverStatus = (Button) findViewById(R.id.driver_status);
         changeDriverStatus.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,8 +97,7 @@ public class MainActivity extends AppCompatActivity
                     changeDriverStatus.setText("available");
             }
         });
-//        TextView requests = (TextView) findViewById(R.id.ongoing_request);
-//        requests.setText("You have 2 requests");
+
         Button cancelRequest = (Button) findViewById(R.id.cancel_request);
         cancelRequest.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,6 +141,12 @@ public class MainActivity extends AppCompatActivity
                     nextState.setText(current_request.status);
             }
         });
+
+
+        previous_requests = (RecyclerView) findViewById(R.id.past_requests);
+        previous_requests.setHasFixedSize(true);
+        layoutManager = new LinearLayoutManager(this);
+        previous_requests.setLayoutManager(layoutManager);
 
         if (driver.username == null) {
             Intent intent = new Intent(this, LoginActivity.class);
@@ -203,6 +216,8 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.history) {
+            RequestAdapter ca = new RequestAdapter(createList(30));
+            previous_requests.setAdapter(ca);
 
         } else if (id == R.id.current_requests) {
 
@@ -239,20 +254,25 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this, "Wait! You ACTUUALLY believed you have requests!!!",Toast.LENGTH_SHORT).show();
         }
     }
-    /*void callLoginDialog() {
-        myDialog = new Dialog(this);
-        myDialog.setContentView(R.layout.sign_in);
-        myDialog.setCancelable(false);
-        Button signin = (Button) findViewById(R.id.confirm_signin);
-        EditText username = (EditText) findViewById(R.id.signin_username_input);
-        EditText password = (EditText) findViewById(R.id.signin_password_input);
-        myDialog.show();
-*//*        signin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                menuState = 1; //the user is signed in
-                invalidateOptionsMenu();
-            }
-        });*//*
-    }*/
+
+
+    private List<request> createList(int size) {
+
+        List<request> result = new ArrayList<request>();
+        for (int i=1; i <= size; i++) {
+            request ci = new request();
+            ci.passenger_name = DUMMY_PASSENGER_NAME + i;
+            ci.passenger_phone = DUMMY_PASSENGER_PHONE + i;
+            ci.status = DUMMY_STATUS + i;
+            ci.time = DUMMY_TIME + i;
+            ci.dest = DUMMY_DEST + i;
+            ci.pickup = DUMMY_PICKUP + i;
+
+            result.add(ci);
+
+        }
+
+        return result;
+    }
+    
 }
