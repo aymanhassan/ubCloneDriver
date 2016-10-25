@@ -27,7 +27,8 @@
         <item
             android:id="@+id/sign_out"
             android:title="Sign Out"
-            android:visible="false"/>
+            android:visible="false"
+            android:icon="@drawable/ic_menu_logout"/>
     <!--</group>-->
 
 <!--
