@@ -143,10 +143,10 @@ public class MainActivity extends AppCompatActivity
         });
 
 
-        previous_requests = (RecyclerView) findViewById(R.id.past_requests);
-        previous_requests.setHasFixedSize(true);
-        layoutManager = new LinearLayoutManager(this);
-        previous_requests.setLayoutManager(layoutManager);
+//        previous_requests = (RecyclerView) findViewById(R.id.past_requests);
+//        previous_requests.setHasFixedSize(true);
+//        layoutManager = new LinearLayoutManager(this);
+//        previous_requests.setLayoutManager(layoutManager);
 
         if (driver.username == null) {
             Intent intent = new Intent(this, LoginActivity.class);
@@ -216,10 +216,8 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.history) {
-            RequestAdapter ca = new RequestAdapter(createList(30));
-            previous_requests.setAdapter(ca);
-            RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.ongoing_request);
-            relativeLayout.setVisibility(View.INVISIBLE);
+            Intent intent = new Intent(this, HistoryActivity.class);
+            startActivity(intent);
             //TODO: ensure the current request reappears after the card view is over
 
         } else if (id == R.id.current_requests) {
@@ -259,23 +257,4 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private List<request> createList(int size) {
-
-        List<request> result = new ArrayList<request>();
-        for (int i=1; i <= size; i++) {
-            request ci = new request();
-            ci.passenger_name = DUMMY_PASSENGER_NAME + i;
-            ci.passenger_phone = DUMMY_PASSENGER_PHONE + i;
-            ci.status = DUMMY_STATUS + i;
-            ci.time = DUMMY_TIME + i;
-            ci.dest = DUMMY_DEST + i;
-            ci.pickup = DUMMY_PICKUP + i;
-
-            result.add(ci);
-
-        }
-
-        return result;
-    }
-    
 }
