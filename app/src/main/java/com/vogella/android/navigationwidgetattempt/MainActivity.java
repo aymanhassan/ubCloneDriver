@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity
     private GoogleMap mMap;
     private int menuState = 0; //the user is signed out
     private static final int LOGIN_REQUEST_CODE = 10;
+    private static final int ONGOING_REQUESTS_CODE = 50;
     private static driver driver = new driver();
     private static final String DUMMY_REQUEST_ID = "1243";
     private static final String DUMMY_PICKUP = "15.5838046,32.5543825";
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity
     private static request current_request = new request(DUMMY_REQUEST_ID, DUMMY_PICKUP, DUMMY_DEST,
             DUMMY_PASSENGER_NAME, DUMMY_PASSENGER_PHONE, DUMMY_TIME, DUMMY_PRICE, DUMMY_NOTES,
             DUMMY_STATUS);
+//    private static request current_request = new request();
     private RecyclerView previous_requests;
     private RecyclerView.Adapter RVadapter;
     private RecyclerView.LayoutManager layoutManager;
@@ -138,7 +140,7 @@ public class MainActivity extends AppCompatActivity
                     current_request = new request();
                 }
                 else
-                    nextState.setText(current_request.status);
+                    nextState.setText(current_request.getNextStatus());
             }
         });
 
@@ -172,6 +174,26 @@ public class MainActivity extends AppCompatActivity
                     navigationView.getMenu().findItem(R.id.sign_in).setVisible(false);
                     navigationView.getMenu().findItem(R.id.sign_out).setVisible(true);
                 }
+            }
+        }
+        if(requestCode == ONGOING_REQUESTS_CODE && resultCode == RESULT_OK){
+//            Toast.makeText(this,data.getExtras().getString("passenger_name"), Toast.LENGTH_LONG).show();
+            if(data.hasExtra("passenger_name")) {
+                current_request.passenger_name = data.getExtras().getString("passenger_name");
+                current_request.passenger_phone = data.getExtras().getString("passenger_phone");
+                current_request.status = data.getExtras().getString("status");
+                current_request.pickup = data.getExtras().getString("pickup");
+                current_request.dest = data.getExtras().getString("dest");
+                current_request.time = data.getExtras().getString("time");
+                RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.ongoing_request);
+                Button nextState = (Button) findViewById(R.id.next_state);
+                TextView current = (TextView) findViewById(R.id.current_status);
+                current.setText(current_request.status);
+                String temp = current_request.status;
+                current_request.nextStatus();
+                nextState.setText(current_request.status);
+                current_request.status = temp;
+                relativeLayout.setVisibility(View.VISIBLE);
             }
         }
     }
@@ -218,9 +240,10 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.history) {
             Intent intent = new Intent(this, HistoryActivity.class);
             startActivity(intent);
-            //TODO: ensure the current request reappears after the card view is over
 
         } else if (id == R.id.current_requests) {
+            Intent intent = new Intent(this, OngoingRequestsActivity.class);
+            startActivityForResult(intent, ONGOING_REQUESTS_CODE);
 
         } else if (id == R.id.sign_in) {
 //            callLoginDialog();

@@ -75,7 +75,7 @@ public class request {
         this.time = time;
     }*/
 
-    public void nextStatus(){
+    public void nextStatus() {
         switch (this.status) {
             case "on the way":
                 this.status = "arrived at pickup point";
@@ -90,12 +90,21 @@ public class request {
                 this.status = "completed";
                 break;
         }
-/*
-        else if (request.status.equals("on the way"))
-            request.status = "pickup";
-        else if (request.status.equals("on the way"))
-            request.status = "pickup";
-        else
-*/
+    }
+
+
+    public String getNextStatus(){
+        switch (this.status) {
+            case "on the way":
+                return "arrived at pickup point";
+            case "arrived at pickup point":
+                return "passenger picked up";
+            case "passenger picked up":
+                return "arrived at destination";
+            case "arrived at destination":
+                return "completed";
+            default:
+                return "error";
+        }
     }
 }
