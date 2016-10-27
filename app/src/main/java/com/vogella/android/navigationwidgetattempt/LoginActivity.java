@@ -29,6 +29,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,6 +109,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         userData.putExtra("gender",driver.gender);
         setResult(RESULT_OK, userData);
         super.finish();
+    }
+
+    @Override
+    public void onBackPressed(){
+        Toast.makeText(this, "You have to login to access the app", Toast.LENGTH_LONG).show();
     }
 
     private void populateAutoComplete() {

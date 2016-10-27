@@ -2,7 +2,9 @@ package com.vogella.android.navigationwidgetattempt;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -47,16 +50,31 @@ public class OngoingRequestAdapter extends RecyclerView.Adapter <com.vogella.and
         RequestViewHolder.card.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.putExtra("passenger_name", RequestViewHolder.passenger_name.getText().toString());
-                intent.putExtra("passenger_phone", RequestViewHolder.passenger_phone.getText().toString());
-                intent.putExtra("status", RequestViewHolder.status.getText().toString());
-                intent.putExtra("pickup", RequestViewHolder.pickup.getText().toString());
-                intent.putExtra("dest", RequestViewHolder.dest.getText().toString());
-                intent.putExtra("time", RequestViewHolder.request_time.getText().toString());
+                AlertDialog.Builder alerBuilder = new AlertDialog.Builder(context);
+                alerBuilder.setMessage("Do you want to start this request?");
+                alerBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent();
+                        intent.putExtra("passenger_name", RequestViewHolder.passenger_name.getText().toString());
+                        intent.putExtra("passenger_phone", RequestViewHolder.passenger_phone.getText().toString());
+                        intent.putExtra("status", RequestViewHolder.status.getText().toString());
+                        intent.putExtra("pickup", RequestViewHolder.pickup.getText().toString());
+                        intent.putExtra("dest", RequestViewHolder.dest.getText().toString());
+                        intent.putExtra("time", RequestViewHolder.request_time.getText().toString());
 
-                ((Activity)context).setResult(Activity.RESULT_OK, intent);
-                ((Activity)context).finish();
+                        ((Activity)context).setResult(Activity.RESULT_OK, intent);
+                        ((Activity)context).finish();
+
+                    }
+                });
+                alerBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+                alerBuilder.show();
 
             }
         });

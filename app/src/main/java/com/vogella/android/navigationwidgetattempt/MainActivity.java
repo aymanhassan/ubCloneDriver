@@ -171,8 +171,6 @@ public class MainActivity extends AppCompatActivity
                     TextView username = (TextView)(navigationView.inflateHeaderView(R.layout.nav_header_main))
                             .findViewById(R.id.show_username);
                     username.setText(name);
-                    navigationView.getMenu().findItem(R.id.sign_in).setVisible(false);
-                    navigationView.getMenu().findItem(R.id.sign_out).setVisible(true);
                 }
             }
         }
@@ -245,18 +243,9 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(this, OngoingRequestsActivity.class);
             startActivityForResult(intent, ONGOING_REQUESTS_CODE);
 
-        } else if (id == R.id.sign_in) {
-//            callLoginDialog();
+        } else if (id == R.id.sign_out) {
             Intent intent = new Intent(this, LoginActivity.class);
             startActivityForResult(intent, LOGIN_REQUEST_CODE);
-            //if(LoginActivity.UserLoginTask.Status)
-        } else if (id == R.id.sign_out) {
-            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-            navigationView.getMenu().findItem(R.id.sign_in).setVisible(true);
-            navigationView.getMenu().findItem(R.id.sign_out).setVisible(false);
-            driver = null;
-            TextView username = (TextView) findViewById(R.id.show_username);
-            username.setText("not logged in");
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
