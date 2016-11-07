@@ -75,7 +75,7 @@
             android:layout_alignParentRight="true"
             android:text="cancel"
             android:textColor="@color/colorAccent"
-            android:background="@color/common_signin_btn_default_background"
+            android:background="@color/bgGray"
             android:textSize="12sp"
             />
         <Button

@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.graphics.Path;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -14,6 +15,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -31,6 +33,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.akexorcist.googledirection.DirectionCallback;
+import com.akexorcist.googledirection.GoogleDirection;
+import com.akexorcist.googledirection.model.Direction;
+import com.akexorcist.googledirection.model.Info;
+import com.akexorcist.googledirection.model.Leg;
+import com.akexorcist.googledirection.model.Route;
+import com.akexorcist.googledirection.util.DirectionConverter;
+import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -51,6 +61,8 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,13 +81,15 @@ public class MainActivity extends AppCompatActivity
     private Marker pickupMarker;
     private LatLng destPoint;
     private Marker destMarker;
+    private Polyline routePolyline;
 
     private int menuState = 0; //the user is signed out
+
     private static final int LOGIN_REQUEST_CODE = 10;
     private static final int ONGOING_REQUESTS_CODE = 50;
     private static driver driver = new driver();
     private static final String DUMMY_REQUEST_ID = "1243";
-    private static final double DUMMY_PICKUP[] = {15.6023428,32.5873593};
+    private static final double DUMMY_PICKUP[] = {15.6023428, 32.5873593};
     private static final double DUMMY_DEST[] = {15.5551185, 32.5543017};
     private static final String DUMMY_PASSENGER_NAME = "John Green";
     private static final String DUMMY_PASSENGER_PHONE = "0123456789";
@@ -87,10 +101,15 @@ public class MainActivity extends AppCompatActivity
             DUMMY_PASSENGER_NAME, DUMMY_PASSENGER_PHONE, DUMMY_TIME, DUMMY_PRICE, DUMMY_NOTES,
             DUMMY_STATUS);
 //    private static request current_request = new request();
+
     private RecyclerView previous_requests;
     private RecyclerView.Adapter RVadapter;
     private RecyclerView.LayoutManager layoutManager;
 //    private Dialog myDialog;
+
+    private static final String TAG = "UbDriver";
+    private static final String GOOGLE_DIRECTIONS_API = "AIzaSyDpJmpRN0BxJ76X27K0NLTGs-gDHQtoxXQ";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,9 +143,9 @@ public class MainActivity extends AppCompatActivity
         changeDriverStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(changeDriverStatus.getText().toString().equals("available"))
+                if (changeDriverStatus.getText().toString().equals("available"))
                     changeDriverStatus.setText("away");
-                else if(changeDriverStatus.getText().toString().equals("away"))
+                else if (changeDriverStatus.getText().toString().equals("away"))
                     changeDriverStatus.setText("available");
             }
         });
@@ -169,8 +188,7 @@ public class MainActivity extends AppCompatActivity
                     Toast.makeText(MainActivity.this, "Thank you for your efforts! The request is complete",
                             Toast.LENGTH_LONG).show();
                     current_request = new request();
-                }
-                else
+                } else
                     nextState.setText(current_request.getNextStatus());
             }
         });
@@ -246,25 +264,25 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data){
-        if(requestCode == LOGIN_REQUEST_CODE && resultCode == RESULT_OK){
-            if(data.hasExtra("username")){
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == LOGIN_REQUEST_CODE && resultCode == RESULT_OK) {
+            if (data.hasExtra("username")) {
                 String name = data.getExtras().getString("username");
-                if(name != null && name.length() > 0){
+                if (name != null && name.length() > 0) {
                     menuState = 1;
                     invalidateOptionsMenu();
                     driver.username = name;
 //                    TextView username = (TextView) findViewById(R.id.show_username);
                     NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-                    TextView username = (TextView)(navigationView.inflateHeaderView(R.layout.nav_header_main))
+                    TextView username = (TextView) (navigationView.inflateHeaderView(R.layout.nav_header_main))
                             .findViewById(R.id.show_username);
                     username.setText(name);
                 }
             }
         }
-        if(requestCode == ONGOING_REQUESTS_CODE && resultCode == RESULT_OK){
+        if (requestCode == ONGOING_REQUESTS_CODE && resultCode == RESULT_OK) {
 //            Toast.makeText(this,data.getExtras().getString("passenger_name"), Toast.LENGTH_LONG).show();
-            if(data.hasExtra("passenger_name")) {
+            if (data.hasExtra("passenger_name")) {
                 //set the data
                 current_request.passenger_name = data.getExtras().getString("passenger_name");
                 current_request.passenger_phone = data.getExtras().getString("passenger_phone");
@@ -275,8 +293,8 @@ public class MainActivity extends AppCompatActivity
                 current_request.dest[1] = data.getExtras().getDouble("dest_latitude");
                 current_request.time = data.getExtras().getString("time");
 
-                pickupPoint = new LatLng(current_request.pickup[0],current_request.pickup[1]);
-                destPoint = new LatLng(current_request.dest[0],current_request.dest[1]);
+                pickupPoint = new LatLng(current_request.pickup[0], current_request.pickup[1]);
+                destPoint = new LatLng(current_request.dest[0], current_request.dest[1]);
 
                 // Setting marker
                 if (pickupMarker != null) {
@@ -299,6 +317,8 @@ public class MainActivity extends AppCompatActivity
                         .title("Destination")
                         .icon(BitmapDescriptorFactory.fromResource(R.mipmap.stop_loc_smaller))
                 );
+
+                showRoute();
 
                 // For zooming automatically to the location of the marker
                 CameraPosition cameraPosition = new CameraPosition.Builder().target(pickupPoint).zoom(12).build();
@@ -381,6 +401,16 @@ public class MainActivity extends AppCompatActivity
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         mMap.setMyLocationEnabled(true);
 
         // Add a marker in Sydney and move the camera
@@ -432,4 +462,53 @@ public class MainActivity extends AppCompatActivity
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
     }
+
+    private void showRoute() {
+        Log.d(TAG, "showRoute: Called");
+
+//        if (routePolyline != null) {
+//            routePolyline.remove();
+//        }
+
+        GoogleDirection.withServerKey(GOOGLE_DIRECTIONS_API)
+                .from(pickupPoint)
+                .to(destPoint)
+                .execute(new DirectionCallback() {
+                    @Override
+                    public void onDirectionSuccess(Direction direction, String rawBody) {
+                        // Do something here
+                        Toast.makeText(MainActivity.this, "Route successfully computed ", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "showRoute: Route successfully computed ");
+
+                        if(direction.isOK()) {
+                            // Do
+                            Route route = direction.getRouteList().get(0);
+                            Leg leg = route.getLegList().get(0);
+
+                            // Distance info
+                            Info distanceInfo = leg.getDistance();
+                            Info durationInfo = leg.getDuration();
+                            String distance = distanceInfo.getText();
+                            String duration = durationInfo.getText();
+
+                            ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();
+                            PolylineOptions polylineOptions = DirectionConverter.createPolyline(MainActivity.this, directionPositionList, 5, getResources().getColor(R.color.colorPrimary));
+                            if (routePolyline != null) {
+                                routePolyline.remove();
+                            }
+                            routePolyline = mMap.addPolyline(polylineOptions);
+
+                        }
+
+                    }
+
+                    @Override
+                    public void onDirectionFailure(Throwable t) {
+                        // Do something here
+                        Toast.makeText(MainActivity.this, "Route Failed ", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "showRoute: Route Failed ");
+                    }
+                });
+    }
+
 }
