@@ -1,13 +1,17 @@
 package com.vogella.android.navigationwidgetattempt;
 
+import android.util.Log;
+
+import static android.content.ContentValues.TAG;
+
 /**
  * Created by nezuma on 10/22/16.
  */
 
 public class request {
     public String request_id;
-    public String pickup;
-    public String dest;
+    public double pickup[] = new double[2];
+    public double dest[] = new double[2];
     public String time;
     public String price;
     public String status;
@@ -16,21 +20,41 @@ public class request {
     public String passenger_phone;
 
     public request(){
-        this.dest = null;
-        this.passenger_name = null;
-        this.pickup = null;
-        this.time = null;
-        this.price = null;
-        this.request_id = null;
-        this.status = null;
-        this.notes = null;
-        this.passenger_phone = null;
+        this.dest = new double[2];
+        this.passenger_name = "";
+        this.pickup = new double[2];
+        this.time = "";
+        this.price = "";
+        this.request_id = "";
+        this.status = "";
+        this.notes = "";
+        this.passenger_phone = "";
     }
-    public request(String request_id, String pickup, String dest, String passenger_name,
+    public request(String request_id, double pickup[], double dest[], String passenger_name,
                    String passenger_phone, String time, String price, String notes, String status){
-        this.dest = dest;
+
+        try {
+            this.dest[0] = dest[0];
+            this.dest[1] = dest[1];
+        }
+        catch (NullPointerException e){
+            Log.d(TAG, "request: dest[0] = " + String.valueOf(dest[0]));
+            Log.d(TAG, "request: dest[1] = " + String.valueOf(dest[1]));
+            Log.d(TAG, "request: I guess the problem lies with this.dest? ");
+        }
+
+
+        try {
+            this.pickup[0] = pickup[0];
+            this.pickup[1] = pickup[1];
+        }
+        catch (NullPointerException e){
+            Log.d(TAG, "request: pickup[0] = " + String.valueOf(pickup[0]));
+            Log.d(TAG, "request: pickup[1] = " + String.valueOf(pickup[1]));
+            Log.d(TAG, "request: I guess the problem lies with this.pickup? ");
+        }
+
         this.passenger_name = passenger_name;
-        this.pickup = pickup;
         this.time = time;
         this.price = price;
         this.request_id = request_id;

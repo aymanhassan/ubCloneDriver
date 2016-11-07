@@ -43,8 +43,8 @@ public class OngoingRequestAdapter extends RecyclerView.Adapter <com.vogella.and
         RequestViewHolder.passenger_name.setText(ci.passenger_name);
         RequestViewHolder.passenger_phone.setText(ci.passenger_phone);
         RequestViewHolder.status.setText(ci.status);
-        RequestViewHolder.pickup.setText(ci.pickup);
-        RequestViewHolder.dest.setText(ci.dest);
+        RequestViewHolder.pickup.setText(String.valueOf(ci.pickup[0]) + "," + String.valueOf(ci.pickup[1]));
+        RequestViewHolder.dest.setText(String.valueOf(ci.dest[0]) + "," + String.valueOf(ci.dest[1]));
         RequestViewHolder.request_time.setText(ci.time);
 
         RequestViewHolder.card.setOnClickListener(new View.OnClickListener() {
@@ -59,8 +59,12 @@ public class OngoingRequestAdapter extends RecyclerView.Adapter <com.vogella.and
                         intent.putExtra("passenger_name", RequestViewHolder.passenger_name.getText().toString());
                         intent.putExtra("passenger_phone", RequestViewHolder.passenger_phone.getText().toString());
                         intent.putExtra("status", RequestViewHolder.status.getText().toString());
-                        intent.putExtra("pickup", RequestViewHolder.pickup.getText().toString());
-                        intent.putExtra("dest", RequestViewHolder.dest.getText().toString());
+                        String temp[] = RequestViewHolder.pickup.getText().toString().split(",");
+                        intent.putExtra("pickup_longitude", Double.parseDouble(temp[0]));
+                        intent.putExtra("pickup_latitude", Double.parseDouble(temp[1]));
+                        temp = RequestViewHolder.dest.getText().toString().split(",");
+                        intent.putExtra("dest_longitude", Double.parseDouble(temp[0]));
+                        intent.putExtra("dest_latitude", Double.parseDouble(temp[1]));
                         intent.putExtra("time", RequestViewHolder.request_time.getText().toString());
 
                         ((Activity)context).setResult(Activity.RESULT_OK, intent);

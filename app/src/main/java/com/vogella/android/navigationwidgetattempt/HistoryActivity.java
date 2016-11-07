@@ -20,7 +20,7 @@ public class HistoryActivity extends AppCompatActivity {
     private static final String DUMMY_STATUS = "on the way";
     private static final String DUMMY_NOTES = "Drive slowly";
     private static final String DUMMY_PRICE = "43";
-    private static final String DUMMY_TIME = "06/11/2016 ; 15:45";
+    private static final String DUMMY_TIME = "06/11/2016 - 15:45";
 //    private static request current_request = new request(DUMMY_REQUEST_ID, DUMMY_PICKUP, DUMMY_DEST,
 //            DUMMY_PASSENGER_NAME, DUMMY_PASSENGER_PHONE, DUMMY_TIME, DUMMY_PRICE, DUMMY_NOTES,
 //            DUMMY_STATUS);
@@ -51,10 +51,13 @@ public class HistoryActivity extends AppCompatActivity {
             request ci = new request();
             ci.passenger_name = DUMMY_PASSENGER_NAME + i;
             ci.passenger_phone = DUMMY_PASSENGER_PHONE + i;
-            ci.status = DUMMY_STATUS + i;
-            ci.time = DUMMY_TIME + i;
-            ci.dest = DUMMY_DEST + i;
-            ci.pickup = DUMMY_PICKUP + i;
+            ci.status = DUMMY_STATUS;
+            ci.time = DUMMY_TIME;
+            ci.dest[0] = Double.parseDouble(DUMMY_DEST.split(",")[0]);
+            ci.dest[1] = Double.parseDouble(DUMMY_DEST.split(",")[1]);
+            ci.pickup[0] = Double.parseDouble(DUMMY_PICKUP.split(",")[0]);
+            ci.pickup[1] = Double.parseDouble(DUMMY_PICKUP.split(",")[1]);
+            ci.price = DUMMY_PRICE + i;
 
             result.add(ci);
 

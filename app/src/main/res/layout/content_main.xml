@@ -49,20 +49,20 @@
     <RelativeLayout
         android:id="@+id/ongoing_request"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/common_signin_btn_light_text_default"
+        android:layout_height="90dp"
+        android:background="#6e447d"
+        android:layout_margin="10dp"
+        android:visibility="invisible"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:visibility="invisible"
         android:layout_marginBottom="20dp">
         <TextView
             android:id="@+id/current_status"
             android:layout_width="160dp"
             android:layout_height="40dp"
-            android:layout_marginLeft="20dp"
             android:text="on the way"
             android:layout_centerVertical="true"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/colorAccent"
             android:textAlignment="center"
             android:textAllCaps="true"/>
         <Button
@@ -70,19 +70,23 @@
             android:layout_width="160dp"
             android:layout_marginRight="20dp"
             android:layout_marginTop="3dp"
-            android:layout_height="50dp"
+            android:layout_height="40dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:text="cancel"
-            android:background="#7F2020"
+            android:textColor="@color/colorAccent"
+            android:background="@color/common_signin_btn_default_background"
             android:textSize="12sp"
             />
         <Button
             android:id="@+id/next_state"
             android:layout_width="160dp"
             android:layout_marginRight="20dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/cancel_request"
+            android:layout_height="40dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="3dp"
+            android:background="@color/sepGray"
+            android:textColor="@color/colorAccent"
             android:layout_alignLeft="@id/cancel_request"
             android:text="At pickup"
             android:textSize="12sp"/>

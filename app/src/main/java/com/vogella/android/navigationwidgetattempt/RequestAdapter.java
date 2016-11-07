@@ -29,39 +29,38 @@ public class RequestAdapter extends RecyclerView.Adapter <RequestAdapter.Request
     @Override
     public void onBindViewHolder(RequestViewHolder RequestViewHolder, int i) {
         request ci = RequestList.get(i);
-        RequestViewHolder.passenger_name.setText(ci.passenger_name);
-        RequestViewHolder.passenger_phone.setText(ci.passenger_phone);
+        RequestViewHolder.price.setText(ci.price);
+        RequestViewHolder.date.setText(ci.time);
         RequestViewHolder.status.setText(ci.status);
-        RequestViewHolder.pickup.setText(ci.pickup);
-        RequestViewHolder.dest.setText(ci.dest);
-        RequestViewHolder.request_time.setText(ci.time);
+        RequestViewHolder.pickup.setText(String.valueOf(ci.pickup[0]) + "," + String.valueOf(ci.pickup[1]));
+        RequestViewHolder.dest.setText(String.valueOf(ci.dest[0]) + "," + String.valueOf(ci.dest[1]));
+//        RequestViewHolder.request_time.setText(ci.time);
     }
 
     @Override
     public RequestViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View itemView = LayoutInflater.
                 from(viewGroup.getContext()).
-                inflate(R.layout.request_card, viewGroup, false);
+                inflate(R.layout.history_entry_layout, viewGroup, false);
 
         return new RequestViewHolder(itemView);
     }
 
     public static class RequestViewHolder extends RecyclerView.ViewHolder{
-        protected TextView passenger_name;
-        protected TextView passenger_phone;
-        protected TextView request_time;
+        protected TextView price;
+        protected TextView date;
         protected TextView status;
         protected TextView pickup;
         protected TextView dest;
 
         public RequestViewHolder(View v){
             super(v);
-            passenger_name = (TextView) v.findViewById(R.id.card_passenger_name);
-            passenger_phone = (TextView) v.findViewById(R.id.card_passenger_phone);
-            request_time = (TextView) v.findViewById(R.id.card_time);
-            status = (TextView) v.findViewById(R.id.card_status);
-            pickup = (TextView) v.findViewById(R.id.card_pickup);
-            dest = (TextView) v.findViewById(R.id.card_dest);
+
+            date = (TextView) v.findViewById(R.id.entry_date);
+            status = (TextView) v.findViewById(R.id.entry_status);
+            pickup = (TextView) v.findViewById(R.id.entry_from);
+            dest = (TextView) v.findViewById(R.id.entry_to);
+            price = (TextView) v.findViewById(R.id.entry_price);
         }
     }
 

@@ -9,25 +9,29 @@
     <RelativeLayout
         android:id="@+id/card_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/sepGray">
         <RelativeLayout
             android:id="@+id/card_passenger_name_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#c7d04e">
+            android:layout_marginBottom="5dp"
+            android:background="@color/bgGray">
             <TextView
                 android:id="@+id/card_passengername"
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
                 android:textSize="12sp"
                 android:text="Passenger name:"
-                android:layout_marginRight="10dp"
-                android:layout_marginEnd="10dp"/>
+                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"/>
             <TextView
                 android:id="@+id/card_passenger_name"
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
                 android:textSize="12sp"
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:text="Some name"/>
@@ -36,14 +40,16 @@
             android:id="@+id/card_passenger_phone_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#943C21"
+            android:layout_marginBottom="5dp"
+            android:background="@color/bgGray"
             android:layout_below="@id/card_passenger_name_view">
             <TextView
                 android:id="@+id/card_passenger_phone"
                 android:layout_width="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
-                android:layout_marginRight="10dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:layout_height="30dp"
                 android:textSize="12sp"
                 android:text="00000000"/>
@@ -52,6 +58,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
                 android:textSize="12sp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
                 android:text="Passenger phone:"
                 android:layout_marginRight="10dp"
                 android:layout_marginEnd="10dp" />
@@ -59,14 +67,17 @@
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#df85db"
             android:id="@+id/card_status_view"
+            android:layout_marginBottom="5dp"
+            android:background="@color/bgGray"
             android:layout_below="@id/card_passenger_phone_view">
             <TextView
                 android:id="@+id/card_status_label"
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
                 android:textSize="12sp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
                 android:layout_marginRight="10dp"
                 android:layout_marginEnd="10dp"
                 android:text="Status :"/>
@@ -75,6 +86,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
                 android:textSize="12sp"
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
                 android:text="completed"/>
@@ -83,14 +96,17 @@
             android:id="@+id/card_time_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#df85db"
             android:layout_below="@id/card_status_view"
+            android:layout_marginBottom="5dp"
+            android:background="@color/bgGray"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true">
             <TextView
                 android:id="@+id/card_time_label"
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
                 android:textSize="12sp"
                 android:text="Date and Time: "/>
             <TextView
@@ -99,8 +115,8 @@
                 android:layout_height="30dp"
                 android:textSize="12sp"
                 android:text="22/11/2016 - 14:25"
-                android:layout_marginRight="10dp"
-                android:layout_marginEnd="10dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"/>
             </RelativeLayout>
@@ -108,12 +124,15 @@
             android:id="@+id/card_pickup_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#df85db"
+            android:layout_marginBottom="5dp"
+            android:background="@color/bgGray"
             android:layout_below="@id/card_time_view">
             <TextView
                 android:id="@+id/card_pickup_label"
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
                 android:textSize="12sp"
                 android:text="Pickup point:"/>
             <TextView
@@ -121,6 +140,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
                 android:textSize="12sp"
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:text="NTC Tower"/>
@@ -130,13 +151,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/card_pickup_view"
+            android:layout_marginBottom="5dp"
+            android:background="@color/bgGray"
             android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:background="#df85db">
+            android:layout_alignParentEnd="true">
             <TextView
                 android:id="@+id/card_dest_label"
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
                 android:textSize="12sp"
                 android:text="Destination point: "/>
             <TextView
@@ -145,8 +169,8 @@
                 android:layout_height="30dp"
                 android:textSize="12sp"
                 android:text="Spectra"
-                android:layout_marginRight="10dp"
-                android:layout_marginEnd="10dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"/>
         </RelativeLayout>

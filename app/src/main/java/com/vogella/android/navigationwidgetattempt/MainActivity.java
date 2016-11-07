@@ -1,11 +1,16 @@
 package com.vogella.android.navigationwidgetattempt;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -26,26 +31,52 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback {
+        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+
     private GoogleMap mMap;
+    private LocationRequest mLocationRequest;
+    private GoogleApiClient mGoogleApiClient;
+    public Location mLastLocation;
+    private Location mCurrentLocation;
+    private String mLastUpdateTime;
+
+    private LatLng pickupPoint;
+    private Marker pickupMarker;
+    private LatLng destPoint;
+    private Marker destMarker;
+
     private int menuState = 0; //the user is signed out
     private static final int LOGIN_REQUEST_CODE = 10;
     private static final int ONGOING_REQUESTS_CODE = 50;
     private static driver driver = new driver();
     private static final String DUMMY_REQUEST_ID = "1243";
-    private static final String DUMMY_PICKUP = "15.5838046,32.5543825";
-    private static final String DUMMY_DEST = "15.8838046, 32.6543825";
+    private static final double DUMMY_PICKUP[] = {15.6023428,32.5873593};
+    private static final double DUMMY_DEST[] = {15.5551185, 32.5543017};
     private static final String DUMMY_PASSENGER_NAME = "John Green";
     private static final String DUMMY_PASSENGER_PHONE = "0123456789";
     private static final String DUMMY_STATUS = "on the way";
@@ -153,7 +184,64 @@ public class MainActivity extends AppCompatActivity
         if (driver.username == null) {
             Intent intent = new Intent(this, LoginActivity.class);
             startActivityForResult(intent, LOGIN_REQUEST_CODE);
+//            finish();
         }
+        // ==================== To get location ================
+
+        // Google API Client
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        // Location Request
+        mLocationRequest = new LocationRequest();
+        // Use high accuracy
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        // Set the update interval to 5 seconds
+        mLocationRequest.setInterval(5000);
+        // Set the fastest update interval to 1 second
+        mLocationRequest.setFastestInterval(1000);
+
+
+        // Check device location settings
+        LocationSettingsRequest.Builder locationSettingsReqBuilder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest);
+        PendingResult<LocationSettingsResult> result =
+                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient,
+                        locationSettingsReqBuilder.build());
+        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+            @Override
+            public void onResult(LocationSettingsResult result) {
+                final Status status = result.getStatus();
+//                final LocationSettingsStates = result.getLocationSettingsStates();
+                switch (status.getStatusCode()) {
+                    case LocationSettingsStatusCodes.SUCCESS:
+                        // All location settings are satisfied. The client can
+                        // initialize location requests here.
+
+                        break;
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                        // Location settings are not satisfied, but this can be fixed
+                        // by showing the user a dialog.
+                        try {
+                            // Show the dialog by calling startResolutionForResult(),
+                            // and check the result in onActivityResult().
+                            status.startResolutionForResult(
+                                    MainActivity.this,
+                                    0x1);
+                        } catch (IntentSender.SendIntentException e) {
+                            // Ignore the error.
+                        }
+                        break;
+                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        // Location settings are not satisfied. However, we have no way
+                        // to fix the settings so we won't show the dialog.
+
+                        break;
+                }
+            }
+        });
 
     }
 
@@ -177,12 +265,46 @@ public class MainActivity extends AppCompatActivity
         if(requestCode == ONGOING_REQUESTS_CODE && resultCode == RESULT_OK){
 //            Toast.makeText(this,data.getExtras().getString("passenger_name"), Toast.LENGTH_LONG).show();
             if(data.hasExtra("passenger_name")) {
+                //set the data
                 current_request.passenger_name = data.getExtras().getString("passenger_name");
                 current_request.passenger_phone = data.getExtras().getString("passenger_phone");
                 current_request.status = data.getExtras().getString("status");
-                current_request.pickup = data.getExtras().getString("pickup");
-                current_request.dest = data.getExtras().getString("dest");
+                current_request.pickup[0] = data.getExtras().getDouble("pickup_longitude");
+                current_request.pickup[1] = data.getExtras().getDouble("pickup_latitude");
+                current_request.dest[0] = data.getExtras().getDouble("dest_longitude");
+                current_request.dest[1] = data.getExtras().getDouble("dest_latitude");
                 current_request.time = data.getExtras().getString("time");
+
+                pickupPoint = new LatLng(current_request.pickup[0],current_request.pickup[1]);
+                destPoint = new LatLng(current_request.dest[0],current_request.dest[1]);
+
+                // Setting marker
+                if (pickupMarker != null) {
+                    pickupMarker.remove();
+                }
+                pickupMarker = mMap.addMarker(new MarkerOptions()
+                        .position(pickupPoint)
+                        .title("Pickup")
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.start_loc_smaller))
+                );
+
+
+                // Setting marker
+                if (destMarker != null) {
+                    destMarker.remove();
+                }
+
+                destMarker = mMap.addMarker(new MarkerOptions()
+                        .position(destPoint)
+                        .title("Destination")
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.stop_loc_smaller))
+                );
+
+                // For zooming automatically to the location of the marker
+                CameraPosition cameraPosition = new CameraPosition.Builder().target(pickupPoint).zoom(12).build();
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.ongoing_request);
                 Button nextState = (Button) findViewById(R.id.next_state);
                 TextView current = (TextView) findViewById(R.id.current_status);
@@ -192,6 +314,7 @@ public class MainActivity extends AppCompatActivity
                 nextState.setText(current_request.status);
                 current_request.status = temp;
                 relativeLayout.setVisibility(View.VISIBLE);
+
             }
         }
     }
@@ -246,6 +369,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.sign_out) {
             Intent intent = new Intent(this, LoginActivity.class);
             startActivityForResult(intent, LOGIN_REQUEST_CODE);
+            finish();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -257,16 +381,55 @@ public class MainActivity extends AppCompatActivity
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        mMap.setMyLocationEnabled(true);
+
         // Add a marker in Sydney and move the camera
         LatLng khartoum = new LatLng(15.5838046, 32.5543825);
-        mMap.addMarker(new MarkerOptions().position(khartoum).title("Marker in Khartoum"));
+//        mMap.addMarker(new MarkerOptions().position(khartoum).title("Marker in Khartoum"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(khartoum, 12 ));
     }
-    public void requestDetails(View view){
-        if (R.id.ongoing_request == view.getId()){
-            Toast.makeText(this, "Wait! You ACTUUALLY believed you have requests!!!",Toast.LENGTH_SHORT).show();
+
+
+
+
+    @Override
+    public void onConnected(Bundle bundle) {
+
+
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest, (LocationListener) this);
+
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
         }
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+        if (mLastLocation != null) {
+            mCurrentLocation = mLastLocation;
+            Toast.makeText(this, "Connected GPlServices "+mLastLocation.getLatitude()+" "+mLastLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+        }
+        else {
+            Toast.makeText(this, "Sorry, it's null", Toast.LENGTH_SHORT).show();
+
+        }
+
     }
 
+    @Override
+    public void onConnectionSuspended(int i) {
 
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
 }
