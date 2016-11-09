@@ -28,6 +28,7 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -64,11 +65,17 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        OnMapReadyCallback,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener  {
 
     private GoogleMap mMap;
     private LocationRequest mLocationRequest;
@@ -81,6 +88,8 @@ public class MainActivity extends AppCompatActivity
     private Marker pickupMarker;
     private LatLng destPoint;
     private Marker destMarker;
+    private LatLng currentLocationPoint;
+    private Marker currentLocationMarker;
     private Polyline routePolyline;
 
     private int menuState = 0; //the user is signed out
@@ -159,8 +168,8 @@ public class MainActivity extends AppCompatActivity
                 alerBuilder.setPositiveButton("Yes, cancel the request", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.ongoing_request);
-                        relativeLayout.setVisibility(View.INVISIBLE);
+                        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.ongoing_request);
+                        linearLayout.setVisibility(View.INVISIBLE);
                         Toast.makeText(MainActivity.this, "The request has been canceled",
                                 Toast.LENGTH_LONG).show();
                         current_request = new request();
@@ -183,8 +192,8 @@ public class MainActivity extends AppCompatActivity
                 current.setText(nextState.getText().toString());
                 current_request.nextStatus();
                 if (current_request.status.equals("completed")) {
-                    RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.ongoing_request);
-                    relativeLayout.setVisibility(View.INVISIBLE);
+                    LinearLayout linearLayout = (LinearLayout) findViewById(R.id.ongoing_request);
+                    linearLayout.setVisibility(View.INVISIBLE);
                     Toast.makeText(MainActivity.this, "Thank you for your efforts! The request is complete",
                             Toast.LENGTH_LONG).show();
                     current_request = new request();
@@ -204,62 +213,6 @@ public class MainActivity extends AppCompatActivity
             startActivityForResult(intent, LOGIN_REQUEST_CODE);
 //            finish();
         }
-        // ==================== To get location ================
-
-        // Google API Client
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-        // Location Request
-        mLocationRequest = new LocationRequest();
-        // Use high accuracy
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        // Set the update interval to 5 seconds
-        mLocationRequest.setInterval(5000);
-        // Set the fastest update interval to 1 second
-        mLocationRequest.setFastestInterval(1000);
-
-
-        // Check device location settings
-        LocationSettingsRequest.Builder locationSettingsReqBuilder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(mLocationRequest);
-        PendingResult<LocationSettingsResult> result =
-                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient,
-                        locationSettingsReqBuilder.build());
-        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-            @Override
-            public void onResult(LocationSettingsResult result) {
-                final Status status = result.getStatus();
-//                final LocationSettingsStates = result.getLocationSettingsStates();
-                switch (status.getStatusCode()) {
-                    case LocationSettingsStatusCodes.SUCCESS:
-                        // All location settings are satisfied. The client can
-                        // initialize location requests here.
-
-                        break;
-                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        // Location settings are not satisfied, but this can be fixed
-                        // by showing the user a dialog.
-                        try {
-                            // Show the dialog by calling startResolutionForResult(),
-                            // and check the result in onActivityResult().
-                            status.startResolutionForResult(
-                                    MainActivity.this,
-                                    0x1);
-                        } catch (IntentSender.SendIntentException e) {
-                            // Ignore the error.
-                        }
-                        break;
-                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                        // Location settings are not satisfied. However, we have no way
-                        // to fix the settings so we won't show the dialog.
-
-                        break;
-                }
-            }
-        });
 
     }
 
@@ -282,7 +235,7 @@ public class MainActivity extends AppCompatActivity
         }
         if (requestCode == ONGOING_REQUESTS_CODE && resultCode == RESULT_OK) {
 //            Toast.makeText(this,data.getExtras().getString("passenger_name"), Toast.LENGTH_LONG).show();
-            if (data.hasExtra("passenger_name")) {
+            if (data.hasExtra("request_id")) {
                 //set the data
                 current_request.passenger_name = data.getExtras().getString("passenger_name");
                 current_request.passenger_phone = data.getExtras().getString("passenger_phone");
@@ -292,6 +245,9 @@ public class MainActivity extends AppCompatActivity
                 current_request.dest[0] = data.getExtras().getDouble("dest_longitude");
                 current_request.dest[1] = data.getExtras().getDouble("dest_latitude");
                 current_request.time = data.getExtras().getString("time");
+                current_request.notes = data.getExtras().getString("notes");
+                current_request.price = data.getExtras().getString("price");
+                current_request.request_id = data.getExtras().getString("request_id");
 
                 pickupPoint = new LatLng(current_request.pickup[0], current_request.pickup[1]);
                 destPoint = new LatLng(current_request.dest[0], current_request.dest[1]);
@@ -318,14 +274,13 @@ public class MainActivity extends AppCompatActivity
                         .icon(BitmapDescriptorFactory.fromResource(R.mipmap.stop_loc_smaller))
                 );
 
+
                 showRoute();
 
                 // For zooming automatically to the location of the marker
                 CameraPosition cameraPosition = new CameraPosition.Builder().target(pickupPoint).zoom(12).build();
                 mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-
-                RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.ongoing_request);
+                LinearLayout linearLayout = (LinearLayout) findViewById(R.id.ongoing_request);
                 Button nextState = (Button) findViewById(R.id.next_state);
                 TextView current = (TextView) findViewById(R.id.current_status);
                 current.setText(current_request.status);
@@ -333,7 +288,7 @@ public class MainActivity extends AppCompatActivity
                 current_request.nextStatus();
                 nextState.setText(current_request.status);
                 current_request.status = temp;
-                relativeLayout.setVisibility(View.VISIBLE);
+                linearLayout.setVisibility(View.VISIBLE);
 
             }
         }
@@ -416,7 +371,65 @@ public class MainActivity extends AppCompatActivity
         // Add a marker in Sydney and move the camera
         LatLng khartoum = new LatLng(15.5838046, 32.5543825);
 //        mMap.addMarker(new MarkerOptions().position(khartoum).title("Marker in Khartoum"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(khartoum, 12 ));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(khartoum, 14 ));
+
+        // ==================== To get location ================
+
+        // Google API Client
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        // Location Request
+        mLocationRequest = new LocationRequest();
+        // Use high accuracy
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        // Set the update interval to 5 seconds
+        mLocationRequest.setInterval(5000);
+        // Set the fastest update interval to 1 second
+        mLocationRequest.setFastestInterval(1000);
+
+
+        // Check device location settings
+        LocationSettingsRequest.Builder locationSettingsReqBuilder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest);
+        PendingResult<LocationSettingsResult> result =
+                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient,
+                        locationSettingsReqBuilder.build());
+        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+            @Override
+            public void onResult(LocationSettingsResult result) {
+                final Status status = result.getStatus();
+//                final LocationSettingsStates = result.getLocationSettingsStates();
+                switch (status.getStatusCode()) {
+                    case LocationSettingsStatusCodes.SUCCESS:
+                        // All location settings are satisfied. The client can
+                        // initialize location requests here.
+
+                        break;
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                        // Location settings are not satisfied, but this can be fixed
+                        // by showing the user a dialog.
+                        try {
+                            // Show the dialog by calling startResolutionForResult(),
+                            // and check the result in onActivityResult().
+                            status.startResolutionForResult(
+                                    MainActivity.this,
+                                    0x1);
+                        } catch (IntentSender.SendIntentException e) {
+                            // Ignore the error.
+                        }
+                        break;
+                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        // Location settings are not satisfied. However, we have no way
+                        // to fix the settings so we won't show the dialog.
+
+                        break;
+                }
+            }
+        });
+
     }
 
 
@@ -460,6 +473,26 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
+    @Override
+    public void onLocationChanged(Location location) {
+
+        mCurrentLocation = location;
+        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+        currentLocationPoint = new LatLng(location.getLatitude(), location.getLongitude());
+
+        if (currentLocationMarker != null) {
+            currentLocationMarker.remove();
+        }
+
+        currentLocationMarker= mMap.addMarker(new MarkerOptions()
+                .position(currentLocationPoint)
+                .title("Current Location")
+        );
+
+//        if(null!= mCurrentLocation)
+//        Toast.makeText(this, "Updated: "+mCurrentLocation.getLatitude()+" "+mCurrentLocation.getLongitude(), Toast.LENGTH_SHORT).show();
 
     }
 

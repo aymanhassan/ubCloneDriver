@@ -38,14 +38,22 @@ public class OngoingRequestAdapter extends RecyclerView.Adapter <com.vogella.and
 
     @Override
     public void onBindViewHolder(final com.vogella.android.navigationwidgetattempt.OngoingRequestAdapter.OngoingRequestViewHolder RequestViewHolder, int i) {
-        request ci = RequestList.get(i);
+        final request ci = RequestList.get(i);
 
+        RequestViewHolder.price.setText(ci.price);
+        RequestViewHolder.date.setText(ci.time);
+        RequestViewHolder.status.setText(ci.status);
+        RequestViewHolder.pickup.setText(String.valueOf(ci.pickup[0]) + "," + String.valueOf(ci.pickup[1]));
+        RequestViewHolder.dest.setText(String.valueOf(ci.dest[0]) + "," + String.valueOf(ci.dest[1]));
+
+/*
         RequestViewHolder.passenger_name.setText(ci.passenger_name);
         RequestViewHolder.passenger_phone.setText(ci.passenger_phone);
         RequestViewHolder.status.setText(ci.status);
         RequestViewHolder.pickup.setText(String.valueOf(ci.pickup[0]) + "," + String.valueOf(ci.pickup[1]));
         RequestViewHolder.dest.setText(String.valueOf(ci.dest[0]) + "," + String.valueOf(ci.dest[1]));
         RequestViewHolder.request_time.setText(ci.time);
+*/
 
         RequestViewHolder.card.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -56,16 +64,19 @@ public class OngoingRequestAdapter extends RecyclerView.Adapter <com.vogella.and
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Intent intent = new Intent();
-                        intent.putExtra("passenger_name", RequestViewHolder.passenger_name.getText().toString());
-                        intent.putExtra("passenger_phone", RequestViewHolder.passenger_phone.getText().toString());
-                        intent.putExtra("status", RequestViewHolder.status.getText().toString());
-                        String temp[] = RequestViewHolder.pickup.getText().toString().split(",");
-                        intent.putExtra("pickup_longitude", Double.parseDouble(temp[0]));
-                        intent.putExtra("pickup_latitude", Double.parseDouble(temp[1]));
-                        temp = RequestViewHolder.dest.getText().toString().split(",");
-                        intent.putExtra("dest_longitude", Double.parseDouble(temp[0]));
-                        intent.putExtra("dest_latitude", Double.parseDouble(temp[1]));
-                        intent.putExtra("time", RequestViewHolder.request_time.getText().toString());
+                        intent.putExtra("passenger_name", ci.passenger_name);
+                        intent.putExtra("passenger_phone", ci.passenger_phone);
+                        intent.putExtra("status", ci.status);
+//                        String temp[] = RequestViewHolder.pickup.getText().toString().split(",");
+                        intent.putExtra("pickup_longitude", ci.pickup[0]);
+                        intent.putExtra("pickup_latitude", ci.pickup[1]);
+//                        temp = RequestViewHolder.dest.getText().toString().split(",");
+                        intent.putExtra("dest_longitude", ci.dest[0]);
+                        intent.putExtra("dest_latitude", ci.dest[1]);
+                        intent.putExtra("time", ci.time);
+                        intent.putExtra("price", ci.price);
+                        intent.putExtra("notes", ci.notes);
+                        intent.putExtra("request_id", ci.request_id);
 
                         ((Activity)context).setResult(Activity.RESULT_OK, intent);
                         ((Activity)context).finish();
@@ -88,12 +99,21 @@ public class OngoingRequestAdapter extends RecyclerView.Adapter <com.vogella.and
     public com.vogella.android.navigationwidgetattempt.OngoingRequestAdapter.OngoingRequestViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View itemView = LayoutInflater.
                 from(viewGroup.getContext()).
-                inflate(R.layout.request_card, viewGroup, false);
+                inflate(R.layout.history_entry_layout, viewGroup, false);
 
         return new com.vogella.android.navigationwidgetattempt.OngoingRequestAdapter.OngoingRequestViewHolder(itemView);
     }
 
     public static class OngoingRequestViewHolder extends RecyclerView.ViewHolder{
+
+        protected TextView price;
+        protected TextView date;
+        protected TextView status;
+        protected TextView pickup;
+        protected TextView dest;
+        protected CardView card;
+
+/*
         protected TextView passenger_name;
         protected TextView passenger_phone;
         protected TextView request_time;
@@ -101,9 +121,19 @@ public class OngoingRequestAdapter extends RecyclerView.Adapter <com.vogella.and
         protected TextView pickup;
         protected TextView dest;
         RelativeLayout card;
+*/
 
         public OngoingRequestViewHolder(View v){
             super(v);
+            date = (TextView) v.findViewById(R.id.entry_date);
+            status = (TextView) v.findViewById(R.id.entry_status);
+            pickup = (TextView) v.findViewById(R.id.entry_from);
+            dest = (TextView) v.findViewById(R.id.entry_to);
+            price = (TextView) v.findViewById(R.id.entry_price);
+            card = (CardView) itemView.findViewById(R.id.history_card_view);
+
+
+/*
             passenger_name = (TextView) v.findViewById(R.id.card_passenger_name);
             passenger_phone = (TextView) v.findViewById(R.id.card_passenger_phone);
             request_time = (TextView) v.findViewById(R.id.card_time);
@@ -111,6 +141,7 @@ public class OngoingRequestAdapter extends RecyclerView.Adapter <com.vogella.and
             pickup = (TextView) v.findViewById(R.id.card_pickup);
             dest = (TextView) v.findViewById(R.id.card_dest);
             card = (RelativeLayout) itemView.findViewById(R.id.card_view);
+*/
         }
     }
 
