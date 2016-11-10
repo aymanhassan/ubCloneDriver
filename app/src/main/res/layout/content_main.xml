@@ -41,7 +41,10 @@
             android:layout_height="wrap_content"></ScrollView>
     </RelativeLayout>
 -->
-
+    <include layout="@layout/ongoing_request"
+        android:visibility="invisible"
+        android:id="@+id/current_request_view">
+    </include>
 
     <LinearLayout
         android:id="@+id/ongoing_request"

@@ -1,19 +1,14 @@
 package com.vogella.android.navigationwidgetattempt;
 
 import android.Manifest;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.graphics.Path;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -25,12 +20,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,7 +32,6 @@ import com.akexorcist.googledirection.model.Info;
 import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.util.DirectionConverter;
-import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -68,7 +58,6 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -110,6 +99,8 @@ public class MainActivity extends AppCompatActivity
             DUMMY_PASSENGER_NAME, DUMMY_PASSENGER_PHONE, DUMMY_TIME, DUMMY_PRICE, DUMMY_NOTES,
             DUMMY_STATUS);
 //    private static request current_request = new request();
+    private static final int REQUEST_SUCCESS = 1;
+    private static final int REQUEST_CANCELLED = 0;
 
     private RecyclerView previous_requests;
     private RecyclerView.Adapter RVadapter;
@@ -168,11 +159,7 @@ public class MainActivity extends AppCompatActivity
                 alerBuilder.setPositiveButton("Yes, cancel the request", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.ongoing_request);
-                        linearLayout.setVisibility(View.INVISIBLE);
-                        Toast.makeText(MainActivity.this, "The request has been canceled",
-                                Toast.LENGTH_LONG).show();
-                        current_request = new request();
+                        endRequest(REQUEST_CANCELLED);
                     }
                 });
                 alerBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -192,17 +179,41 @@ public class MainActivity extends AppCompatActivity
                 current.setText(nextState.getText().toString());
                 current_request.nextStatus();
                 if (current_request.status.equals("completed")) {
-                    LinearLayout linearLayout = (LinearLayout) findViewById(R.id.ongoing_request);
-                    linearLayout.setVisibility(View.INVISIBLE);
-                    Toast.makeText(MainActivity.this, "Thank you for your efforts! The request is complete",
-                            Toast.LENGTH_LONG).show();
-                    current_request = new request();
+                    endRequest(REQUEST_SUCCESS);
                 } else
                     nextState.setText(current_request.getNextStatus());
             }
         });
 
+        TextView current = (TextView) findViewById(R.id.current_status);
+        current.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                findViewById(R.id.current_request_view).setVisibility(View.VISIBLE);
+                ((TextView)findViewById(R.id.cr_time)).setText(current_request.time);
+                ((TextView)findViewById(R.id.cr_passenger_name)).setText(current_request.passenger_name);
+                ((TextView)findViewById(R.id.cr_passenger_phone)).setText(current_request.passenger_phone);
+                ((TextView)findViewById(R.id.cr_price)).setText(current_request.price);
+                ((TextView)findViewById(R.id.cr_status)).setText(current_request.status);
+                ((TextView)findViewById(R.id.cr_notes)).setText(current_request.notes);
+                ((TextView)findViewById(R.id.cr_pickup)).
+                        setText(String.valueOf(current_request.pickup[0]) + " , " +
+                                String.valueOf(current_request.pickup[1]));
+                ((TextView)findViewById(R.id.cr_dest)).
+                        setText(String.valueOf(current_request.dest[0]) + " , " +
+                                String.valueOf(current_request.dest[1]));
+                ((TextView)findViewById(R.id.cr_time)).setText(current_request.time);
 
+                Button hide_request = (Button) findViewById(R.id.cr_close);
+                hide_request.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        findViewById(R.id.current_request_view).setVisibility(View.INVISIBLE);
+                    }
+                });
+
+            }
+        });
 //        previous_requests = (RecyclerView) findViewById(R.id.past_requests);
 //        previous_requests.setHasFixedSize(true);
 //        layoutManager = new LinearLayoutManager(this);
@@ -212,6 +223,31 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(this, LoginActivity.class);
             startActivityForResult(intent, LOGIN_REQUEST_CODE);
 //            finish();
+        }
+
+    }
+
+    void endRequest(int res){
+        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.ongoing_request);
+        linearLayout.setVisibility(View.INVISIBLE);
+        if (res == REQUEST_SUCCESS)
+            Toast.makeText(MainActivity.this, "Thank you for your efforts! The request is complete",
+                    Toast.LENGTH_LONG).show();
+        else if(res == REQUEST_CANCELLED)
+            Toast.makeText(MainActivity.this, "The request has been canceled",
+                    Toast.LENGTH_LONG).show();
+        current_request = new request();
+        if (pickupMarker != null) {
+            pickupMarker.remove();
+        }
+        if (destMarker != null) {
+            destMarker.remove();
+        }
+        if (currentLocationMarker != null) {
+            currentLocationMarker.remove();
+        }
+        if (routePolyline != null) {
+            routePolyline.remove();
         }
 
     }
@@ -280,6 +316,8 @@ public class MainActivity extends AppCompatActivity
                 // For zooming automatically to the location of the marker
                 CameraPosition cameraPosition = new CameraPosition.Builder().target(pickupPoint).zoom(12).build();
                 mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+                //set values for the different views
                 LinearLayout linearLayout = (LinearLayout) findViewById(R.id.ongoing_request);
                 Button nextState = (Button) findViewById(R.id.next_state);
                 TextView current = (TextView) findViewById(R.id.current_status);
@@ -510,7 +548,7 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onDirectionSuccess(Direction direction, String rawBody) {
                         // Do something here
-                        Toast.makeText(MainActivity.this, "Route successfully computed ", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(MainActivity.this, "Route successfully computed ", Toast.LENGTH_SHORT).show();
                         Log.d(TAG, "showRoute: Route successfully computed ");
 
                         if(direction.isOK()) {
