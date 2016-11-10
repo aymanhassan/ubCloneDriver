@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
@@ -210,6 +211,28 @@ public class MainActivity extends AppCompatActivity
                     public void onClick(View view) {
                         findViewById(R.id.current_request_view).setVisibility(View.INVISIBLE);
                     }
+                });
+                TextView passengerPhone = (TextView) findViewById(R.id.cr_passenger_phone);
+                passengerPhone.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        AlertDialog.Builder alerBuilder = new AlertDialog.Builder(MainActivity.this);
+                        alerBuilder.setMessage("Do you want to call the number " + current_request.passenger_phone + "?");
+                        alerBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent intent = new Intent(Intent.ACTION_DIAL);
+                                intent.setData(Uri.parse("tel:".concat(current_request.passenger_phone)));
+                                startActivity(intent);
+                            }
+                        });
+                        alerBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        });
+                        alerBuilder.show();                    }
                 });
 
             }
